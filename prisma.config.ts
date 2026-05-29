@@ -6,18 +6,14 @@ import { getDirectDatabaseUrl } from "./lib/database-url";
 
 const databaseUrl = getDirectDatabaseUrl();
 
-if (!databaseUrl) {
-  throw new Error(
-    "Set DIRECT_DATABASE_URL to a postgres:// URL (from `npm run db:local`). Prisma Studio cannot use prisma+postgres:// URLs.",
-  );
-}
-
+// A direct postgres:// URL is only needed by CLI commands that connect to the DB
+// (migrate, db push, studio). `prisma generate` does not, so we omit the datasource
+// when no URL is available to avoid breaking installs/builds (e.g. on Vercel where
+// only a prisma+postgres:// URL is configured).
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
   },
-  datasource: {
-    url: databaseUrl,
-  },
+  ...(databaseUrl ? { datasource: { url: databaseUrl } } : {}),
 });
