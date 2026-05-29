@@ -7,17 +7,23 @@ import { Card, CardContent } from "@/components/ui/card";
 
 type CommentListItem = {
   id: string;
+  name?: string;
   content: string;
   createdAt: Date;
+  user?: { name: string } | null;
 };
 
 type CommentListProps = {
   comments: CommentListItem[];
 };
 
-function getInitial(content: string) {
-  const trimmed = content.trim();
-  return trimmed.length > 0 ? trimmed[0]!.toUpperCase() : "?";
+function getDisplayName(comment: CommentListItem) {
+  return comment.user?.name?.trim() || comment.name?.trim() || "ผู้เยี่ยมชม";
+}
+
+function getInitial(comment: CommentListItem) {
+  const displayName = getDisplayName(comment);
+  return displayName[0]?.toUpperCase() ?? "?";
 }
 
 export function CommentList({ comments }: CommentListProps) {
@@ -52,11 +58,14 @@ export function CommentList({ comments }: CommentListProps) {
           <Card className="gap-0 py-0 transition-colors hover:border-primary/30">
             <CardContent className="flex gap-4 py-5">
               <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-fuchsia-500 text-sm font-semibold text-primary-foreground shadow-sm">
-                {getInitial(comment.content)}
+                {getInitial(comment)}
               </span>
               <div className="flex flex-1 flex-col gap-2">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <MessageCircle className="size-3.5" />
+                  <span className="font-medium text-foreground/80">
+                    {getDisplayName(comment)}
+                  </span>
                   <time dateTime={new Date(comment.createdAt).toISOString()}>
                     {new Date(comment.createdAt).toLocaleString("th-TH", {
                       dateStyle: "medium",

@@ -1,12 +1,13 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
   AlertCircle,
   Check,
   Inbox,
-  KeyRound,
   Loader2,
   LogOut,
   RefreshCw,
@@ -14,12 +15,10 @@ import {
   X,
 } from "lucide-react";
 
-import { ADMIN_STORAGE_KEY, getAdminAuthHeaders } from "@/lib/admin";
+import { BlogAdminPanel } from "@/components/admin/blog-admin-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -27,11 +26,20 @@ type CommentStatus = "PENDING" | "APPROVED" | "REJECTED";
 
 type AdminComment = {
   id: string;
+  name: string;
   content: string;
   slug: string;
   status: CommentStatus;
   createdAt: string;
+  user?: { name: string; email: string } | null;
 };
+
+const sectionTabs = [
+  { id: "articles", label: "จัดการบทความ" },
+  { id: "comments", label: "จัดการคอมเมนต์" },
+] as const;
+
+type AdminSection = (typeof sectionTabs)[number]["id"];
 
 const tabs: { label: string; status: CommentStatus }[] = [
   { label: "รออนุมัติ", status: "PENDING" },
@@ -48,9 +56,15 @@ const statusMeta: Record<
   REJECTED: { label: "ถูกปฏิเสธ", variant: "destructive" },
 };
 
+const fetchOptions: RequestInit = {
+  credentials: "include",
+};
+
 export function AdminDashboard() {
-  const [apiKey, setApiKey] = useState<string | null>(null);
-  const [inputKey, setInputKey] = useState("");
+  const router = useRouter();
+  const [isReady, setIsReady] = useState(false);
+  const [activeSection, setActiveSection] =
+    useState<AdminSection>("articles");
   const [activeStatus, setActiveStatus] = useState<CommentStatus>("PENDING");
   const [comments, setComments] = useState<AdminComment[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -58,25 +72,37 @@ export function AdminDashboard() {
   const [actionId, setActionId] = useState<string | null>(null);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem(ADMIN_STORAGE_KEY);
-    if (stored) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate auth key from client-only sessionStorage on mount
-      setApiKey(stored);
+    async function checkAdmin() {
+      try {
+        const response = await fetch("/api/auth/session", fetchOptions);
+        const data = (await response.json()) as {
+          authenticated?: boolean;
+          user?: { role?: string };
+        };
+
+        if (!data.authenticated || data.user?.role !== "ADMIN") {
+          router.replace("/admin/sign-in");
+          return;
+        }
+
+        setIsReady(true);
+      } catch {
+        router.replace("/admin/sign-in");
+      }
     }
-  }, []);
+
+    void checkAdmin();
+  }, [router]);
 
   const loadComments = useCallback(async () => {
-    if (!apiKey) {
-      return;
-    }
-
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`/api/comments?status=${activeStatus}`, {
-        headers: getAdminAuthHeaders(apiKey),
-      });
+      const response = await fetch(
+        `/api/comments?status=${activeStatus}`,
+        fetchOptions,
+      );
       const data = (await response.json()) as {
         comments?: AdminComment[];
         error?: string;
@@ -84,8 +110,7 @@ export function AdminDashboard() {
 
       if (!response.ok) {
         if (response.status === 401) {
-          sessionStorage.removeItem(ADMIN_STORAGE_KEY);
-          setApiKey(null);
+          router.replace("/admin/sign-in");
         }
 
         setError(data.error ?? "ไม่สามารถโหลดคอมเมนต์ได้");
@@ -100,49 +125,38 @@ export function AdminDashboard() {
     } finally {
       setIsLoading(false);
     }
-  }, [activeStatus, apiKey]);
+  }, [activeStatus, router]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- refetch comments when api key or active status changes
-    void loadComments();
-  }, [loadComments]);
-
-  function handleLogin(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const trimmed = inputKey.trim();
-
-    if (!trimmed) {
+    if (!isReady) {
       return;
     }
 
-    sessionStorage.setItem(ADMIN_STORAGE_KEY, trimmed);
-    setApiKey(trimmed);
-    setInputKey("");
-  }
+    void loadComments();
+  }, [isReady, loadComments]);
 
-  function handleLogout() {
-    sessionStorage.removeItem(ADMIN_STORAGE_KEY);
-    setApiKey(null);
-    setComments([]);
-    setError(null);
+  async function handleLogout() {
+    await fetch("/api/auth/sign-out", { ...fetchOptions, method: "POST" });
+    router.replace("/admin/sign-in");
+    router.refresh();
   }
 
   async function handleAction(id: string, action: "approve" | "reject") {
-    if (!apiKey) {
-      return;
-    }
-
     setActionId(id);
     setError(null);
 
     try {
       const response = await fetch(`/api/comments/${id}/${action}`, {
+        ...fetchOptions,
         method: "PATCH",
-        headers: getAdminAuthHeaders(apiKey),
       });
       const data = (await response.json()) as { error?: string };
 
       if (!response.ok) {
+        if (response.status === 401) {
+          router.replace("/admin/sign-in");
+        }
+
         setError(data.error ?? "ดำเนินการไม่สำเร็จ");
         return;
       }
@@ -155,53 +169,12 @@ export function AdminDashboard() {
     }
   }
 
-  if (!apiKey) {
+  if (!isReady) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 24, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className="mx-auto w-full max-w-md"
-      >
-        <Card>
-          <CardContent className="flex flex-col gap-6 py-2">
-            <div className="flex flex-col gap-3">
-              <span className="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-fuchsia-500 text-primary-foreground shadow-md shadow-primary/30">
-                <KeyRound className="size-6" />
-              </span>
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight">
-                  เข้าสู่ระบบผู้ดูแล
-                </h1>
-                <p className="mt-1.5 text-sm text-muted-foreground">
-                  ใส่ค่า{" "}
-                  <code className="rounded bg-muted px-1.5 py-0.5 text-xs">
-                    ADMIN_API_KEY
-                  </code>{" "}
-                  จากไฟล์ .env เพื่อจัดการคอมเมนต์
-                </p>
-              </div>
-            </div>
-
-            <form onSubmit={handleLogin} className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="admin-key">Admin API Key</Label>
-                <Input
-                  id="admin-key"
-                  type="password"
-                  value={inputKey}
-                  onChange={(event) => setInputKey(event.target.value)}
-                  placeholder="Bearer key"
-                />
-              </div>
-              <Button type="submit" size="lg" className="gap-2">
-                <ShieldCheck className="size-4" />
-                เข้าสู่ระบบ
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </motion.div>
+      <div className="flex flex-col gap-4">
+        <Skeleton className="h-12 w-48" />
+        <Skeleton className="h-32 w-full rounded-xl" />
+      </div>
     );
   }
 
@@ -217,7 +190,7 @@ export function AdminDashboard() {
               แดชบอร์ดผู้ดูแล
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              อนุมัติหรือปฏิเสธคอมเมนต์ที่รอตรวจสอบ
+              แก้ไขบทความ ควบคุมการเผยแพร่ และอนุมัติคอมเมนต์
             </p>
           </div>
         </div>
@@ -237,7 +210,7 @@ export function AdminDashboard() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={handleLogout}
+            onClick={() => void handleLogout()}
             className="gap-1.5"
           >
             <LogOut className="size-4" />
@@ -246,6 +219,23 @@ export function AdminDashboard() {
         </div>
       </div>
 
+      <Tabs
+        value={activeSection}
+        onValueChange={(value) => setActiveSection(value as AdminSection)}
+      >
+        <TabsList className="w-full sm:w-auto">
+          {sectionTabs.map((tab) => (
+            <TabsTrigger key={tab.id} value={tab.id}>
+              {tab.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+
+      {activeSection === "articles" ? <BlogAdminPanel /> : null}
+
+      {activeSection === "comments" ? (
+        <>
       <Tabs
         value={activeStatus}
         onValueChange={(value) => setActiveStatus(value as CommentStatus)}
@@ -320,7 +310,10 @@ export function AdminDashboard() {
                         <div className="mb-2 flex flex-wrap items-center gap-2">
                           <Badge variant={meta.variant}>{meta.label}</Badge>
                           <Badge variant="outline" className="font-mono">
-                            {comment.slug}
+                            /blog/{comment.slug}
+                          </Badge>
+                          <Badge variant="secondary">
+                            {comment.user?.name ?? comment.name}
                           </Badge>
                         </div>
                         <p className="whitespace-pre-wrap leading-7 text-card-foreground">
@@ -376,6 +369,8 @@ export function AdminDashboard() {
           </AnimatePresence>
         </ul>
       )}
+        </>
+      ) : null}
     </section>
   );
 }

@@ -1,17 +1,25 @@
-export const ADMIN_STORAGE_KEY = "blog-admin-api-key";
+import { SESSION_COOKIE, getSession } from "@/lib/auth";
 
-export function isAdminAuthorized(request: Request): boolean {
-  const adminKey = process.env.ADMIN_API_KEY;
+export {
+  SESSION_COOKIE,
+  clearSessionCookieOptions,
+  createSessionToken,
+  getClientIp,
+  getSession,
+  getSessionCookieOptions,
+  isValidEmail,
+  isValidPassword,
+  readSessionToken,
+  requireAdmin,
+  requireAuth,
+  verifySessionToken,
+  type SessionPayload,
+  type UserRole,
+} from "@/lib/auth";
 
-  if (!adminKey) {
-    return false;
-  }
+export const ADMIN_SESSION_COOKIE = SESSION_COOKIE;
 
-  return request.headers.get("authorization") === `Bearer ${adminKey}`;
-}
-
-export function getAdminAuthHeaders(apiKey: string): HeadersInit {
-  return {
-    Authorization: `Bearer ${apiKey}`,
-  };
+export async function isAdminAuthorized(request: Request): Promise<boolean> {
+  const session = await getSession(request);
+  return session?.role === "ADMIN";
 }

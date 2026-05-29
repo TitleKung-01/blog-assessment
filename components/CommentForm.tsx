@@ -5,9 +5,10 @@ import { FormEvent, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { AlertCircle, CheckCircle2, Loader2, Send } from "lucide-react";
 
-import { isThaiText } from "@/lib/validation";
+import { isThaiAndNumbers } from "@/lib/validation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -19,14 +20,24 @@ const MAX_LENGTH = 1000;
 
 export function CommentForm({ slug }: CommentFormProps) {
   const router = useRouter();
+  const [name, setName] = useState("");
   const [content, setContent] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const trimmed = content.trim();
-  const hasNonThai = trimmed.length > 0 && !isThaiText(trimmed);
-  const canSubmit = trimmed.length > 0 && !hasNonThai && !isSubmitting;
+  const trimmedName = name.trim();
+  const trimmedContent = content.trim();
+  const hasInvalidName =
+    trimmedName.length > 0 && !isThaiAndNumbers(trimmedName);
+  const hasInvalidContent =
+    trimmedContent.length > 0 && !isThaiAndNumbers(trimmedContent);
+  const canSubmit =
+    trimmedName.length > 0 &&
+    trimmedContent.length > 0 &&
+    !hasInvalidName &&
+    !hasInvalidContent &&
+    !isSubmitting;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -38,7 +49,7 @@ export function CommentForm({ slug }: CommentFormProps) {
       const response = await fetch("/api/comments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content, slug }),
+        body: JSON.stringify({ name, content, slug }),
       });
 
       const data = (await response.json()) as { error?: string };
@@ -48,6 +59,7 @@ export function CommentForm({ slug }: CommentFormProps) {
         return;
       }
 
+      setName("");
       setContent("");
       setSuccess("ส่งคอมเมนต์แล้ว รอการอนุมัติจากผู้ดูแล");
       router.refresh();
@@ -63,40 +75,61 @@ export function CommentForm({ slug }: CommentFormProps) {
       <CardContent>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="comment" className="text-base">
+            <Label htmlFor="comment-name" className="text-base">
               แสดงความคิดเห็น
             </Label>
             <p className="text-sm text-muted-foreground">
-              กรุณาเขียนเป็นภาษาไทย คอมเมนต์จะแสดงหลังผู้ดูแลอนุมัติ
+              กรอกชื่อและข้อความเป็นภาษาไทยและตัวเลขเท่านั้น
+              คอมเมนต์จะแสดงหลังผู้ดูแลอนุมัติ
             </p>
           </div>
 
-          <Textarea
-            id="comment"
-            name="content"
-            rows={4}
-            maxLength={MAX_LENGTH}
-            value={content}
-            onChange={(event) => {
-              setContent(event.target.value);
-              if (error) setError(null);
-            }}
-            aria-invalid={hasNonThai}
-            placeholder="เขียนคอมเมนต์เป็นภาษาไทย..."
-          />
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="comment-name">ชื่อผู้ส่ง *</Label>
+            <Input
+              id="comment-name"
+              name="name"
+              value={name}
+              onChange={(event) => {
+                setName(event.target.value);
+                if (error) setError(null);
+              }}
+              aria-invalid={hasInvalidName}
+              placeholder="ชื่อของคุณ"
+              required
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="comment">ข้อความ *</Label>
+            <Textarea
+              id="comment"
+              name="content"
+              rows={4}
+              maxLength={MAX_LENGTH}
+              value={content}
+              onChange={(event) => {
+                setContent(event.target.value);
+                if (error) setError(null);
+              }}
+              aria-invalid={hasInvalidContent}
+              placeholder="เขียนคอมเมนต์เป็นภาษาไทยและตัวเลข..."
+              required
+            />
+          </div>
 
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <AnimatePresence mode="wait">
-              {hasNonThai ? (
+              {hasInvalidName || hasInvalidContent ? (
                 <motion.span
-                  key="thai-hint"
+                  key="validation-hint"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   className="flex items-center gap-1 text-destructive"
                 >
                   <AlertCircle className="size-3.5" />
-                  รองรับเฉพาะตัวอักษรภาษาไทย
+                  รองรับเฉพาะภาษาไทยและตัวเลข
                 </motion.span>
               ) : (
                 <span key="spacer" />

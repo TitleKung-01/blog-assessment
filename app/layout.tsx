@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     template: "%s · Aurora Blog",
   },
   description:
-    "บล็อกตัวอย่างที่ออกแบบด้วย shadcn/ui และแอนิเมชัน Framer Motion พร้อมระบบคอมเมนต์ที่ต้องผ่านการอนุมัติ",
+    "อ่านบทความ ค้นหา และแสดงความคิดเห็นที่ผ่านการอนุมัติจากผู้ดูแล",
 };
 
 export default function RootLayout({

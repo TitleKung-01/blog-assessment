@@ -1,7 +1,8 @@
-import { isAdminAuthorized } from "@/lib/admin";
-import { prisma } from "@/lib/prisma";
-import { isThaiText } from "@/lib/validation";
 import { NextResponse } from "next/server";
+
+import { requireAdmin } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { isThaiAndNumbers } from "@/lib/validation";
 
 const ADMIN_STATUSES = ["PENDING", "APPROVED", "REJECTED"] as const;
 
@@ -14,8 +15,9 @@ export async function GET(request: Request) {
     status &&
     ADMIN_STATUSES.includes(status as (typeof ADMIN_STATUSES)[number])
   ) {
-    if (!isAdminAuthorized(request)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = await requireAdmin(request);
+    if (auth instanceof NextResponse) {
+      return auth;
     }
 
     const comments = await prisma.comment.findMany({
@@ -24,6 +26,11 @@ export async function GET(request: Request) {
         ...(slug ? { slug } : {}),
       },
       orderBy: { createdAt: "desc" },
+      include: {
+        user: {
+          select: { name: true, email: true },
+        },
+      },
     });
 
     return NextResponse.json({ comments });
@@ -41,8 +48,10 @@ export async function GET(request: Request) {
     orderBy: { createdAt: "asc" },
     select: {
       id: true,
+      name: true,
       content: true,
       createdAt: true,
+      user: { select: { name: true } },
     },
   });
 
@@ -58,6 +67,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
+  const name =
+    typeof body === "object" &&
+    body !== null &&
+    "name" in body &&
+    typeof body.name === "string"
+      ? body.name.trim()
+      : "";
   const content =
     typeof body === "object" &&
     body !== null &&
@@ -73,22 +89,39 @@ export async function POST(request: Request) {
       ? body.slug.trim()
       : "";
 
-  if (!content || !slug) {
+  if (!name || !content || !slug) {
     return NextResponse.json(
-      { error: "content and slug are required" },
+      { error: "name, content and slug are required" },
       { status: 400 },
     );
   }
 
-  if (!isThaiText(content)) {
+  if (!isThaiAndNumbers(name)) {
     return NextResponse.json(
-      { error: "Comments must be written in Thai" },
+      { error: "Name must contain only Thai characters and numbers" },
       { status: 400 },
     );
+  }
+
+  if (!isThaiAndNumbers(content)) {
+    return NextResponse.json(
+      { error: "Comments must contain only Thai characters and numbers" },
+      { status: 400 },
+    );
+  }
+
+  const article = await prisma.blogArticle.findUnique({
+    where: { slug },
+    select: { id: true, isPublished: true },
+  });
+
+  if (!article?.isPublished) {
+    return NextResponse.json({ error: "Blog article not found" }, { status: 404 });
   }
 
   const comment = await prisma.comment.create({
     data: {
+      name,
       content,
       slug,
       status: "PENDING",

@@ -105,7 +105,7 @@ export function Landing() {
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="rounded-full">
-              <Link href="/admin">เข้าสู่แดชบอร์ดผู้ดูแล</Link>
+              <Link href="/admin/sign-in">เข้าสู่แดชบอร์ดผู้ดูแล</Link>
             </Button>
           </motion.div>
         </motion.div>

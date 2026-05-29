@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function AdminPage() {
   return (
-    <main className="mx-auto w-full max-w-4xl px-6 py-16">
+    <main className="mx-auto w-full max-w-6xl px-6 py-16">
       <AdminDashboard />
     </main>
   );

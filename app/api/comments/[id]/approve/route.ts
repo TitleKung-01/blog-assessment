@@ -1,4 +1,4 @@
-import { isAdminAuthorized } from "@/lib/admin";
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -10,8 +10,9 @@ export async function PATCH(
   request: Request,
   { params }: ApproveCommentRouteProps,
 ) {
-  if (!isAdminAuthorized(request)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireAdmin(request);
+  if (auth instanceof NextResponse) {
+    return auth;
   }
 
   const { id } = await params;
