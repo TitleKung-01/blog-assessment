@@ -75,19 +75,19 @@ stateDiagram-v2
 
 ```mermaid
 flowchart TD
-    A[เข้า /admin/sign-in] --> B{POST /api/auth/sign-in role=ADMIN}
-    B -->|success| C[Session cookie set]
+    A["เข้า /admin/sign-in"] --> B{"POST /api/auth/sign-in<br/>role=ADMIN"}
+    B -->|success| C["Session cookie set"]
     B -->|fail| A
-    C --> D[/admin Dashboard]
+    C --> D["Admin Dashboard"]
 
-    D --> E[จัดการบทความ]
-    D --> F[จัดการคอมเมนต์]
+    D --> E["จัดการบทความ"]
+    D --> F["จัดการคอมเมนต์"]
 
-    E --> G[GET/POST /api/blog]
-    E --> H[PATCH /api/blog/:id]
+    E --> G["GET/POST /api/blog"]
+    E --> H["PATCH /api/blog/:id"]
 
-    F --> I[GET /api/comments?status=...]
-    F --> J[approve / reject]
+    F --> I["GET /api/comments?status=..."]
+    F --> J["approve / reject"]
 ```
 
 **Admin signup flow:**
@@ -124,16 +124,16 @@ sequenceDiagram
 
 ```mermaid
 flowchart TB
-    subgraph presentation [Presentation Layer]
+    subgraph presentation ["Presentation Layer"]
         Pages["app/**/page.tsx"]
         Components["components/**"]
     end
 
-    subgraph application [Application Layer]
+    subgraph application ["Application Layer"]
         Hooks["hooks/use-session.ts<br/>hooks/use-admin-comments.ts"]
     end
 
-    subgraph infrastructure [Infrastructure Layer]
+    subgraph infrastructure ["Infrastructure Layer"]
         API["app/api/**/route.ts"]
         Lib["lib/auth.ts, lib/prisma.ts, lib/validation.ts"]
         DB["PostgreSQL via Prisma"]
