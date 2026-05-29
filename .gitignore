@@ -43,3 +43,8 @@ next-env.d.ts
 # uploads
 /public/uploads/*
 !/public/uploads/.gitkeep
+
+# cursor / local agent config
+/.cursor/
+AGENTS.md
+CLAUDE.md
