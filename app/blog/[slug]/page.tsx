@@ -4,8 +4,6 @@ import { ArrowLeft, CalendarDays, Clock, MessageSquareText } from "lucide-react"
 
 import { CommentForm } from "@/components/CommentForm";
 import { CommentList } from "@/components/CommentList";
-import { AnimatedGradientText } from "@/components/magic/animated-gradient-text";
-import { AuroraBackground } from "@/components/magic/aurora-background";
 import { Badge } from "@/components/ui/badge";
 import { prisma } from "@/lib/prisma";
 
@@ -52,10 +50,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   return (
     <div className="flex flex-col">
-      <AuroraBackground
-        showRadialGradient={false}
-        className="border-b border-border/60 px-6 pb-14 pt-12"
-      >
+      <section className="border-b border-border/60 bg-gradient-to-b from-primary/5 to-background px-6 pb-14 pt-12">
         <article className="mx-auto flex w-full max-w-3xl flex-col gap-5">
           <Link
             href="/"
@@ -77,19 +72,19 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             </span>
           </div>
 
-          <h1 className="text-balance text-3xl font-bold tracking-tight sm:text-5xl">
-            <AnimatedGradientText>{toTitle(slug)}</AnimatedGradientText>
+          <h1 className="text-balance text-3xl font-bold tracking-tight text-primary sm:text-5xl">
+            {toTitle(slug)}
           </h1>
           <p className="max-w-2xl text-lg leading-8 text-muted-foreground">
             เนื้อหาบทความจะแสดงที่นี่ ด้านล่างคือพื้นที่แสดงความคิดเห็นที่ต้องผ่านการอนุมัติก่อนเผยแพร่
           </p>
         </article>
-      </AuroraBackground>
+      </section>
 
       <main className="mx-auto flex w-full max-w-3xl flex-col gap-10 px-6 py-14">
         <div className="prose-zinc max-w-none leading-8 text-foreground/90">
           <p>
-            ยินดีต้อนรับสู่ Aurora Blog บทความนี้เป็นตัวอย่างสำหรับสาธิตระบบคอมเมนต์
+            ยินดีต้อนรับสู่ Blog บทความนี้เป็นตัวอย่างสำหรับสาธิตระบบคอมเมนต์
             ที่ผู้อ่านสามารถมีส่วนร่วมได้อย่างปลอดภัย
             โดยทุกความคิดเห็นจะถูกตรวจสอบโดยผู้ดูแลก่อนแสดงต่อสาธารณะ
           </p>

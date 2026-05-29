@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 
 import { ADMIN_STORAGE_KEY, getAdminAuthHeaders } from "@/lib/admin";
-import { BorderBeam } from "@/components/magic/border-beam";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -164,7 +163,7 @@ export function AdminDashboard() {
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="mx-auto w-full max-w-md"
       >
-        <Card className="relative overflow-hidden">
+        <Card>
           <CardContent className="flex flex-col gap-6 py-2">
             <div className="flex flex-col gap-3">
               <span className="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-fuchsia-500 text-primary-foreground shadow-md shadow-primary/30">
@@ -201,7 +200,6 @@ export function AdminDashboard() {
               </Button>
             </form>
           </CardContent>
-          <BorderBeam size={140} duration={10} />
         </Card>
       </motion.div>
     );

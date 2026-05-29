@@ -11,11 +11,7 @@ import {
   Zap,
 } from "lucide-react";
 
-import { AuroraBackground } from "@/components/magic/aurora-background";
-import { AnimatedGradientText } from "@/components/magic/animated-gradient-text";
-import { BlurFade } from "@/components/magic/blur-fade";
-import { BorderBeam } from "@/components/magic/border-beam";
-import { ShimmerButton } from "@/components/magic/shimmer-button";
+import { FadeIn } from "@/components/motion/fade-in";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -61,17 +57,21 @@ const item = {
 export function Landing() {
   return (
     <div className="flex flex-col">
-      <AuroraBackground className="flex flex-col items-center justify-center px-6 py-24 sm:py-32">
+      <section className="relative overflow-hidden border-b border-border/60 px-6 py-24 sm:py-32">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-primary/8 via-background to-background"
+        />
         <motion.div
           variants={container}
           initial="hidden"
           animate="visible"
-          className="flex w-full max-w-3xl flex-col items-center text-center"
+          className="mx-auto flex w-full max-w-3xl flex-col items-center text-center"
         >
           <motion.div variants={item}>
             <Badge
               variant="outline"
-              className="mb-6 gap-1.5 border-primary/30 bg-background/60 px-3 py-1 text-sm backdrop-blur"
+              className="mb-6 gap-1.5 border-primary/30 bg-background/80 px-3 py-1 text-sm"
             >
               <Sparkles className="size-3.5 text-primary" />
               ระบบคอมเมนต์ที่ต้องผ่านการอนุมัติ
@@ -83,7 +83,7 @@ export function Landing() {
             className="text-balance text-4xl font-bold leading-tight tracking-tight sm:text-6xl"
           >
             พื้นที่บทความที่{" "}
-            <AnimatedGradientText>สวยงาม</AnimatedGradientText> และปลอดภัย
+            <span className="text-primary">สวยงาม</span> และปลอดภัย
           </motion.h1>
 
           <motion.p
@@ -98,28 +98,26 @@ export function Landing() {
             variants={item}
             className="mt-10 flex flex-col items-center gap-3 sm:flex-row"
           >
-            <Link href="/blog/welcome">
-              <ShimmerButton className="px-8 py-3.5 text-base">
-                <span className="flex items-center gap-2">
-                  อ่านบทความตัวอย่าง
-                  <ArrowRight className="size-4" />
-                </span>
-              </ShimmerButton>
-            </Link>
+            <Button asChild size="lg" className="gap-2 rounded-full px-8">
+              <Link href="/blog/welcome">
+                อ่านบทความตัวอย่าง
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
             <Button asChild variant="outline" size="lg" className="rounded-full">
               <Link href="/admin">เข้าสู่แดชบอร์ดผู้ดูแล</Link>
             </Button>
           </motion.div>
         </motion.div>
-      </AuroraBackground>
+      </section>
 
       <section className="mx-auto -mt-10 w-full max-w-5xl px-6 pb-8">
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((feature, index) => (
-            <BlurFade key={feature.title} inView delay={index * 0.12}>
-              <Card className="group relative h-full overflow-hidden transition-shadow hover:shadow-lg hover:shadow-primary/10">
+            <FadeIn key={feature.title} inView delay={index * 0.12}>
+              <Card className="h-full transition-shadow hover:shadow-lg hover:shadow-primary/10">
                 <CardContent className="flex flex-col gap-4">
-                  <span className="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/15 to-fuchsia-500/15 text-primary">
+                  <span className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                     <feature.icon className="size-6" />
                   </span>
                   <h3 className="text-lg font-semibold tracking-tight">
@@ -129,21 +127,15 @@ export function Landing() {
                     {feature.description}
                   </p>
                 </CardContent>
-                <BorderBeam
-                  size={120}
-                  duration={10}
-                  delay={index * 2}
-                  className="opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                />
               </Card>
-            </BlurFade>
+            </FadeIn>
           ))}
         </div>
       </section>
 
       <section className="mx-auto w-full max-w-5xl px-6 py-16">
-        <BlurFade inView>
-          <Card className="group relative overflow-hidden border-primary/15 bg-gradient-to-br from-card to-accent/30">
+        <FadeIn inView>
+          <Card className="overflow-hidden border-primary/15 bg-gradient-to-br from-card to-accent/30">
             <CardContent className="flex flex-col gap-8 py-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-md">
                 <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
@@ -161,7 +153,7 @@ export function Landing() {
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.4, delay: index * 0.1 }}
-                    className="flex items-center gap-3 rounded-xl border bg-background/60 px-4 py-3 backdrop-blur"
+                    className="flex items-center gap-3 rounded-xl border bg-background/80 px-4 py-3"
                   >
                     <CheckCircle2 className="size-5 shrink-0 text-success" />
                     <span className="text-sm font-medium">
@@ -174,13 +166,8 @@ export function Landing() {
                 ))}
               </ol>
             </CardContent>
-            <BorderBeam
-              size={200}
-              duration={14}
-              className="opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-            />
           </Card>
-        </BlurFade>
+        </FadeIn>
       </section>
     </div>
   );

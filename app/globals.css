@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -118,50 +117,6 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-
-  --animate-aurora: aurora 18s ease-in-out infinite alternate;
-  --animate-shimmer: shimmer 2.5s linear infinite;
-  --animate-shine: shine 8s ease-in-out infinite;
-  --animate-border-beam: border-beam calc(var(--duration) * 1s) infinite linear;
-}
-
-@keyframes aurora {
-  0% {
-    transform: translate3d(0, 0, 0) rotate(-3deg) scale(1);
-  }
-  50% {
-    transform: translate3d(3%, -3%, 0) rotate(3deg) scale(1.05);
-  }
-  100% {
-    transform: translate3d(0, 0, 0) rotate(-3deg) scale(1);
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-@keyframes shine {
-  0% {
-    background-position: 200% 0;
-  }
-  25% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-@keyframes border-beam {
-  100% {
-    offset-distance: 100%;
-  }
 }
 
 @layer base {
