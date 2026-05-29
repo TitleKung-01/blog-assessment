@@ -20,3 +20,17 @@ export function normalizeGalleryImages(images: string[]): string[] {
     .filter(Boolean)
     .slice(0, MAX_BLOG_GALLERY_IMAGES);
 }
+
+/**
+ * Builds a URL-friendly slug. Keeps Thai letters, Latin letters and digits,
+ * collapses whitespace to dashes, and trims stray dashes.
+ */
+export function slugify(input: string): string {
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/[^\u0E00-\u0E7Fa-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}

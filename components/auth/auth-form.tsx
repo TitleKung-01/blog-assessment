@@ -4,28 +4,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { AlertCircle, Loader2, LogIn, UserPlus } from "lucide-react";
+import { Loader2, LogIn, UserPlus } from "lucide-react";
 
+import { AuthBrandingAside } from "@/components/auth/auth-branding-aside";
+import { AlertMessage } from "@/components/feedback/alert-message";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { UserRole } from "@/lib/auth";
-
-type AuthMode = "sign-in" | "sign-up";
-
-type AuthFormProps = {
-  mode: AuthMode;
-  role: UserRole;
-  title: string;
-  description: string;
-  alternateHref: string;
-  alternateLabel: string;
-};
-
-const fetchOptions: RequestInit = {
-  credentials: "include",
-};
+import { credentialedFetch } from "@/lib/fetch";
+import type { AuthFormProps } from "@/types";
 
 export function AuthForm({
   mode,
@@ -62,7 +49,7 @@ export function AuthForm({
 
     try {
       const response = await fetch(endpoint, {
-        ...fetchOptions,
+        ...credentialedFetch,
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -88,13 +75,17 @@ export function AuthForm({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="mx-auto w-full max-w-md"
+      className="mx-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-border/50 bg-card shadow-soft"
     >
-      <Card>
-        <CardContent className="flex flex-col gap-6 py-2">
+      <div className="grid md:grid-cols-[1fr_1.1fr]">
+        <AuthBrandingAside mode={mode} role={role} />
+
+        <div className="flex flex-col gap-6 p-6 sm:p-8">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-            <p className="mt-1.5 text-sm text-muted-foreground">{description}</p>
+            <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+              {description}
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -161,16 +152,9 @@ export function AuthForm({
 
             <AnimatePresence mode="wait">
               {error ? (
-                <motion.p
-                  key="error"
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-sm text-destructive"
-                >
-                  <AlertCircle className="size-4 shrink-0" />
+                <AlertMessage key="error" variant="error" animated>
                   {error}
-                </motion.p>
+                </AlertMessage>
               ) : null}
             </AnimatePresence>
 
@@ -191,8 +175,8 @@ export function AuthForm({
               {alternateLabel}
             </Link>
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </motion.div>
   );
 }

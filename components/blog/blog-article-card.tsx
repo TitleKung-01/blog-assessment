@@ -1,52 +1,63 @@
 import Image from "next/image";
 import Link from "next/link";
-import { CalendarDays, ImageIcon } from "lucide-react";
+import { CalendarDays, Clock3, ImageIcon } from "lucide-react";
 
-import type { BlogArticleListItem } from "@/lib/blog-queries";
-import { Card, CardContent } from "@/components/ui/card";
+import { estimateReadMinutes } from "@/lib/blog-utils";
+import type { BlogArticleListItem } from "@/types";
 
 type BlogArticleCardProps = {
   article: BlogArticleListItem;
 };
 
 export function BlogArticleCard({ article }: BlogArticleCardProps) {
+  const readMinutes = estimateReadMinutes(`${article.summary} ${article.title}`);
+
   return (
-    <Card className="overflow-hidden py-0 transition-shadow hover:shadow-lg hover:shadow-primary/10">
-      <Link href={`/blog/${article.slug}`} className="group flex flex-col sm:flex-row">
-        <div className="relative aspect-[16/10] w-full shrink-0 bg-muted sm:w-56 md:w-64">
+    <article className="group">
+      <Link
+        href={`/blog/${article.slug}`}
+        className="flex flex-col gap-5 sm:flex-row sm:items-start"
+      >
+        <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden rounded-xl bg-muted sm:w-52">
           {article.coverUrl ? (
             <Image
               src={article.coverUrl}
               alt={article.title}
               fill
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
-              sizes="(max-width: 640px) 100vw, 256px"
+              className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+              sizes="(max-width: 640px) 100vw, 208px"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/15 to-fuchsia-500/10 text-muted-foreground">
-              <ImageIcon className="size-10 opacity-60" aria-hidden />
+            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-fuchsia-500/5 text-muted-foreground">
+              <ImageIcon className="size-8 opacity-50" aria-hidden />
             </div>
           )}
         </div>
 
-        <CardContent className="flex flex-1 flex-col gap-3 py-5">
-          <h2 className="text-lg font-semibold leading-snug tracking-tight transition-colors group-hover:text-primary">
+        <div className="flex min-w-0 flex-1 flex-col gap-2.5 py-0.5">
+          <h2 className="text-xl font-semibold leading-snug tracking-tight transition-colors group-hover:text-primary">
             {article.title}
           </h2>
-          <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">
+          <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
             {article.summary}
           </p>
-          <time
-            dateTime={article.publishedAt.toISOString()}
-            className="mt-auto inline-flex items-center gap-1.5 text-xs text-muted-foreground"
-          >
-            <CalendarDays className="size-3.5" />
-            {article.publishedAt.toLocaleDateString("th-TH", {
-              dateStyle: "long",
-            })}
-          </time>
-        </CardContent>
+          <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+            <time
+              dateTime={article.publishedAt.toISOString()}
+              className="inline-flex items-center gap-1.5"
+            >
+              <CalendarDays className="size-3.5" />
+              {article.publishedAt.toLocaleDateString("th-TH", {
+                dateStyle: "long",
+              })}
+            </time>
+            <span className="inline-flex items-center gap-1.5">
+              <Clock3 className="size-3.5" />
+              อ่านประมาณ {readMinutes} นาที
+            </span>
+          </div>
+        </div>
       </Link>
-    </Card>
+    </article>
   );
 }

@@ -1,23 +1,11 @@
 import type { PrismaClient } from "@/app/generated/prisma/client";
+import type {
+  BlogArticleListItem,
+  BlogArticleQueryResult,
+} from "@/types/blog";
 
 export const BLOG_PAGE_SIZE = 10;
-
-export type BlogArticleListItem = {
-  id: string;
-  title: string;
-  slug: string;
-  summary: string;
-  coverUrl: string | null;
-  publishedAt: Date;
-  viewCount: number;
-};
-
-export type BlogArticleQueryResult = {
-  articles: BlogArticleListItem[];
-  total: number;
-  page: number;
-  totalPages: number;
-};
+export type { BlogArticleListItem, BlogArticleQueryResult };
 
 const listSelect = {
   id: true,

@@ -26,7 +26,7 @@ export function BlogPagination({
   return (
     <nav
       aria-label="Pagination"
-      className="flex flex-col items-center gap-4 border-t border-border/60 pt-8"
+      className="flex flex-col items-center gap-4 border-t border-border/50 pt-10"
     >
       <p className="text-sm text-muted-foreground">
         แสดงหน้า {page} จาก {totalPages} ({total.toLocaleString("th-TH")}{" "}

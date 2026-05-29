@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { BookOpen } from "lucide-react";
 
 import { BlogArticleCard } from "@/components/blog/blog-article-card";
 import { BlogPagination } from "@/components/blog/blog-pagination";
@@ -32,36 +31,37 @@ export default async function BlogIndexPage({ searchParams }: BlogIndexPageProps
 
   return (
     <div className="flex flex-col">
-      <section className="border-b border-border/60 bg-gradient-to-b from-primary/5 to-background px-6 pb-10 pt-10">
-        <div className="mx-auto flex w-full max-w-4xl flex-col gap-4">
-          <div className="flex items-center gap-3">
-            <span className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-fuchsia-500 text-primary-foreground shadow-md shadow-primary/30">
-              <BookOpen className="size-5" />
-            </span>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-                หน้ารวม Blog
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                แสดงบทความทั้งหมด พร้อมค้นหาชื่อเรื่องและแบ่งหน้าทีละ 10 รายการ
-              </p>
-            </div>
+      <section className="border-b border-border/50 px-6 pb-12 pt-14">
+        <div className="mx-auto flex w-full max-w-4xl flex-col gap-8">
+          <div className="flex flex-col gap-3">
+            <p className="text-sm font-medium uppercase tracking-widest text-primary/80">
+              Aurora Blog
+            </p>
+            <h1 className="text-balance text-3xl font-bold tracking-tight sm:text-4xl">
+              บทความทั้งหมด
+            </h1>
+            <p className="max-w-xl text-base leading-relaxed text-muted-foreground">
+              ค้นหาและอ่านบทความที่คัดสรร
+              {total > 0
+                ? ` — มี ${total.toLocaleString("th-TH")} บทความในระบบ`
+                : ""}
+            </p>
           </div>
 
           <BlogSearchForm initialQuery={query} />
         </div>
       </section>
 
-      <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-6 py-10">
+      <main className="mx-auto flex w-full max-w-4xl flex-col px-6 py-12">
         {query ? (
-          <p className="text-sm text-muted-foreground">
+          <p className="mb-8 text-sm text-muted-foreground">
             ผลการค้นหา &quot;{query}&quot; — พบ{" "}
             {total.toLocaleString("th-TH")} บทความ
           </p>
         ) : null}
 
         {articles.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border px-6 py-16 text-center">
+          <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border/70 bg-surface/50 px-6 py-20 text-center">
             <p className="text-sm text-muted-foreground">
               {query
                 ? "ไม่พบบทความที่ตรงกับคำค้นหา"
@@ -69,9 +69,9 @@ export default async function BlogIndexPage({ searchParams }: BlogIndexPageProps
             </p>
           </div>
         ) : (
-          <ul className="flex flex-col gap-5">
+          <ul className="divide-y divide-border/50">
             {articles.map((article) => (
-              <li key={article.id}>
+              <li key={article.id} className="py-6 first:pt-0 last:pb-0">
                 <BlogArticleCard article={article} />
               </li>
             ))}

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function SignInPage() {
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-16">
+    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center px-6 py-16">
       <AuthForm
         mode="sign-in"
         role="USER"

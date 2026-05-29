@@ -5,14 +5,16 @@ import { notFound } from "next/navigation";
 import {
   ArrowLeft,
   CalendarDays,
+  Clock3,
   Eye,
   ImageIcon,
   MessageSquareText,
 } from "lucide-react";
 
-import { CommentForm } from "@/components/CommentForm";
-import { CommentList } from "@/components/CommentList";
+import { CommentForm } from "@/components/blog/comment-form";
+import { CommentList } from "@/components/blog/comment-list";
 import { Badge } from "@/components/ui/badge";
+import { estimateReadMinutes } from "@/lib/blog-utils";
 import {
   getBlogArticleBySlug,
   incrementBlogViewCount,
@@ -72,11 +74,14 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   }
 
   const comments = await getApprovedComments(slug);
+  const readMinutes = estimateReadMinutes(
+    `${article.title} ${article.summary} ${article.content}`,
+  );
 
   return (
     <div className="flex flex-col">
-      <section className="border-b border-border/60 bg-gradient-to-b from-primary/5 to-background px-6 pb-14 pt-12">
-        <article className="mx-auto flex w-full max-w-3xl flex-col gap-5">
+      <section className="border-b border-border/50 px-6 pb-14 pt-12">
+        <article className="mx-auto flex w-full max-w-3xl flex-col gap-6">
           <Link
             href="/blog"
             className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -86,7 +91,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           </Link>
 
           {article.coverUrl ? (
-            <div className="relative aspect-[21/9] w-full overflow-hidden rounded-2xl border border-border bg-muted">
+            <div className="relative aspect-[21/9] w-full overflow-hidden rounded-2xl bg-muted shadow-soft">
               <Image
                 src={article.coverUrl}
                 alt={article.title}
@@ -97,41 +102,47 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               />
             </div>
           ) : (
-            <div className="flex aspect-[21/9] w-full items-center justify-center rounded-2xl border border-dashed border-border bg-gradient-to-br from-primary/10 to-fuchsia-500/5 text-muted-foreground">
-              <ImageIcon className="size-12 opacity-50" aria-hidden />
+            <div className="flex aspect-[21/9] w-full items-center justify-center rounded-2xl border border-dashed border-border/70 bg-surface/50 text-muted-foreground">
+              <ImageIcon className="size-12 opacity-40" aria-hidden />
             </div>
           )}
 
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="secondary">บทความ</Badge>
-            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-              <CalendarDays className="size-3.5" />
+            <Badge variant="outline" className="gap-1 font-normal">
+              <CalendarDays className="size-3" />
               {article.publishedAt.toLocaleDateString("th-TH", {
                 dateStyle: "long",
               })}
-            </span>
-            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-              <Eye className="size-3.5" />
+            </Badge>
+            <Badge variant="outline" className="gap-1 font-normal">
+              <Eye className="size-3" />
               {article.viewCount.toLocaleString("th-TH")} ครั้ง
-            </span>
+            </Badge>
+            <Badge variant="outline" className="gap-1 font-normal">
+              <Clock3 className="size-3" />
+              {readMinutes} นาที
+            </Badge>
           </div>
 
-          <h1 className="text-balance text-3xl font-bold tracking-tight text-primary sm:text-5xl">
-            {article.title}
-          </h1>
-          <p className="max-w-2xl text-lg leading-8 text-muted-foreground">
-            {article.summary}
-          </p>
+          <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
+            <h1 className="text-balance text-3xl font-bold tracking-tight sm:text-4xl">
+              {article.title}
+            </h1>
+            <p className="text-lg leading-relaxed text-muted-foreground">
+              {article.summary}
+            </p>
+          </div>
         </article>
       </section>
 
-      <main className="mx-auto flex w-full max-w-3xl flex-col gap-10 px-6 py-14">
+      <main className="mx-auto flex w-full max-w-3xl flex-col gap-12 px-6 py-14">
         {article.images.length > 0 ? (
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="columns-1 gap-4 sm:columns-2">
             {article.images.map((imageUrl, index) => (
               <div
                 key={`${imageUrl}-${index}`}
-                className="relative aspect-[4/3] overflow-hidden rounded-xl border border-border bg-muted"
+                className="relative mb-4 aspect-[4/3] break-inside-avoid overflow-hidden rounded-xl bg-muted shadow-soft"
               >
                 <Image
                   src={imageUrl}
@@ -145,16 +156,17 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           </div>
         ) : null}
 
-        <div className="prose-zinc max-w-none whitespace-pre-wrap leading-8 text-foreground/90">
-          {article.content}
+        <div className="mx-auto w-full max-w-2xl">
+          <div className="prose-article whitespace-pre-wrap">{article.content}</div>
         </div>
 
-        <section aria-label="Comments" className="flex flex-col gap-8">
+        <section
+          aria-label="Comments"
+          className="mx-auto flex w-full max-w-2xl flex-col gap-8 border-t border-border/50 pt-12"
+        >
           <div className="flex items-center gap-2">
             <MessageSquareText className="size-5 text-primary" />
-            <h2 className="text-xl font-semibold tracking-tight">
-              ความคิดเห็น
-            </h2>
+            <h2 className="text-xl font-semibold tracking-tight">ความคิดเห็น</h2>
             <Badge variant="outline" className="ml-1">
               {comments.length}
             </Badge>

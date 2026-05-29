@@ -1,14 +1,9 @@
 import { NextResponse } from "next/server";
 
-export const SESSION_COOKIE = "session";
-export type UserRole = "USER" | "ADMIN";
+import type { SessionPayload, UserRole } from "@/types/auth";
 
-export type SessionPayload = {
-  sub: string;
-  role: UserRole;
-  exp: number;
-  n: string;
-};
+export const SESSION_COOKIE = "session";
+export type { SessionPayload, UserRole };
 
 const SESSION_TTL_MS = 8 * 60 * 60 * 1000;
 
